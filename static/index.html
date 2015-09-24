@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Chatroom</title>
+	<link rel="stylesheet" href="bootstrap.css">
+	<style>
+	div.message_box{
+		background-color: gainsboro;
+		width:70%;
+		height: 300px;
+		display: inline-block;
+		vertical-align: top;
+		overflow: auto;
+	}
+	div.users_box{
+		width:25%;
+		height: 300px;
+		display: inline-block;
+		background-color: black;
+		color: white;
+		vertical-align: top;
+	}
+	</style>
+	<script src="jquery.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript">
+
+	$(document).ready(function(){
+		var socket = io.connect();
+		while(!name)
+		{
+			var name = prompt("Please enter your name");
+		}
+		socket.emit('newUser', {userName: name});
+
+		socket.on('updateUserList', function(serverData){
+			$('div.users_box').html('');
+			$('div.users_box').append("<h4>" + " Users online" +  "</h4>");
+			$(serverData).each(function(index){
+
+				$('div.users_box').append(serverData[index].name+'<br>');
+			});
+		});
+		$(document).on('submit', 'form', function(){
+			socket.emit('newMessage', { msg: ('<p>' + name + ": " + $('#newMessage').val() + '</p>' + "<hr>") } );
+			$('#newMessage').val(' ');
+			return false;
+		});
+		socket.on('updateMessageBoard', function(serverData){
+
+			$('div.message_box').append(serverData.msg);
+			$('div.message_box').scrollTop($('div.message_box')[0].scrollHeight);
+		})
+	});
+	</script>
+</head>
+<body>
+	<center>
+		<legend>
+		<fieldset>
+			<h3> Theo's Chat Room </h3>
+		</legend>
+	</center>
+	<div class="container">
+	<form>
+	<div class="message_box">
+	</div>
+	<div class="users_box">
+	</div>
+	<input type="text" id='newMessage'>
+	<input type="submit" class="btn btn-primary">
+	</form>
+	</div>
+</fieldset>
+</body>
+</html>
